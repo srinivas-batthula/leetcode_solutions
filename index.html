@@ -8,26 +8,34 @@
     <style>
         body { font-family: Arial, sans-serif; padding: 20px; max-width: 800px; margin: auto; }
         #content { border: 1px solid #ddd; padding: 15px; border-radius: 5px; background: #f9f9f9; }
+        #d2 { margin-top: 20px; padding: 10px; border: 1px solid #ddd; border-radius: 5px; background: #f1f1f1; }
     </style>
 </head>
 <body>
-    <h2>Srinivas's LeetCode Solutions: </h2>
+    <h2>Srinivas's LeetCode Solutions:</h2>
 
     <div id="d1">
-        <input type="text" placeholder="Enter path: (Arrays/Basic)" name="inp1" id="inp1">
+        <input type="text" placeholder="Enter path: (Arrays/Basic.md)" id="inp1">
         <button type="button" id="btn1">Fetch</button>
     </div>
+    
+    <div id="d2">
+        <h3>Add a New Problem</h3>
+        <input type="text" placeholder="Enter problem title" id="title">
+        <input type="text" placeholder="Enter problem link" id="link">
+        <input type="text" placeholder="Enter path (e.g., Arrays/Basic.md)" id="path">
+        <button type="button" id="addProblemBtn">Add Problem</button>
+    </div>
 
-    <div id="content">Loading...</div>
-
+    <div id="content"></div>
+    
 
     <script>
-        const inp1 = document.getElementById("inp1")
-        const btn1 = document.getElementById("btn1")
-
+        const inp1 = document.getElementById("inp1");
+        const btn1 = document.getElementById("btn1");
 
         btn1.addEventListener("click", function () {
-            const v = inp1.value
+            const v = inp1.value;
             fetch(`https://raw.githubusercontent.com/srinivas-batthula/leetcode_solutions/main/${v}`)
             .then(response => {
                 if (!response.ok) {
@@ -36,27 +44,81 @@
                 return response.text();
             })
             .then(markdown => {
-                // Split the Markdown content into lines
                 let lines = markdown.split("\n");
-                let count = 0; // Counter for numbering problems
+                let count = 0;
 
-                // Process each line
                 let updatedMarkdown = lines.map(line => {
-                    if (line.startsWith("### ")) { // Check if line is a title
-                        count++; // Increase problem number
-                        return `### ${count}. ` + line.replace(/^### \d*\.? /, ""); // Replace existing number
+                    if (line.startsWith("### ")) { 
+                        count++; 
+                        return `### ${count}. ` + line.replace(/^### \d*\.? /, ""); 
                     }
                     return line;
-                }).join("\n")
+                }).join("\n");
 
-                // Convert to HTML and update the page
                 document.getElementById('content').innerHTML = marked.parse(updatedMarkdown);
             })
             .catch(error => {
-            document.getElementById('content').innerHTML = `<p style="color:red;">Error loading README: ${error.message}</p>`;
-            console.error("Error loading README:", error);
-            })
-        })
+                document.getElementById('content').innerHTML = `<p style="color:red;">Error loading README: ${error.message}</p>`;
+                console.error("Error loading README:", error);
+            });
+        });
+
+        // Add Problem to GitHub
+        document.getElementById("addProblemBtn").addEventListener("click", async function () {
+            const title = document.getElementById("title").value.trim();
+            const link = document.getElementById("link").value.trim();
+            const path = document.getElementById("path").value.trim();
+
+            if (!title || !link || !path) {
+                alert("Please enter all fields (title, link, path)");
+                return;
+            }
+
+            const githubUsername = "srinivas-batthula"; // Your GitHub username
+            const repoName = "leetcode_solutions"; // Your repository name
+            const filePath = path;
+            const apiUrl = `https://api.github.com/repos/${githubUsername}/${repoName}/contents/${filePath}`;
+            const token = "YOUR_PERSONAL_ACCESS_TOKEN"; // Replace with your GitHub PAT
+
+            try {
+                // Fetch existing file content
+                const response = await fetch(apiUrl, {
+                    headers: { Authorization: `token ${token}` }
+                });
+
+                if (!response.ok) throw new Error(`GitHub API Error: ${response.status}`);
+
+                const fileData = await response.json();
+                const existingContent = atob(fileData.content); // Decode base64 content
+
+                // Append new problem in Markdown format
+                const newContent = existingContent + `\n\n### [${title}](${link})\n<br>\n`;
+
+                // Encode to base64
+                const encodedContent = btoa(unescape(encodeURIComponent(newContent)));
+
+                // Push update to GitHub
+                const updateResponse = await fetch(apiUrl, {
+                    method: "PUT",
+                    headers: {
+                        Authorization: `token ${token}`,
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        message: `Added new problem: ${title}`,
+                        content: encodedContent,
+                        sha: fileData.sha
+                    })
+                });
+
+                if (!updateResponse.ok) throw new Error(`GitHub Update Error: ${updateResponse.status}`);
+
+                alert("Problem added successfully!");
+            } catch (error) {
+                console.error("Error adding problem:", error);
+                alert("Failed to add problem. Check console for details.");
+            }
+        });
     </script>
 
 </body>
