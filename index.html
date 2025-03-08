@@ -11,41 +11,52 @@
     </style>
 </head>
 <body>
+    <h2>Srinivas's LeetCode Solutions: </h2>
 
-    <h2>README.md Preview</h2>
+    <div id="d1">
+        <input type="text" placeholder="Enter path: (Arrays/Basic)" name="inp1" id="inp1">
+        <button type="button" id="btn1">Fetch</button>
+    </div>
+
     <div id="content">Loading...</div>
 
+
     <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            fetch('https://raw.githubusercontent.com/srinivas-batthula/leetcode_solutions/main/Arrays/Basic')
-        .then(response => {
-            if (!response.ok) {
-                throw new Error(`HTTP error! Status: ${response.status}`);
-            }
-            return response.text();
-        })
-        .then(markdown => {
-            // Split the Markdown content into lines
-            let lines = markdown.split("\n");
-            let count = 0; // Counter for numbering problems
+        const inp1 = document.getElementById("inp1")
+        const btn1 = document.getElementById("btn1")
 
-            // Process each line
-            let updatedMarkdown = lines.map(line => {
-                if (line.startsWith("### ")) { // Check if line is a title
-                    count++; // Increase problem number
-                    return `### ${count}. ` + line.replace(/^### \d*\.? /, ""); // Replace existing number
+
+        btn1.addEventListener("click", function () {
+            const v = inp1.value
+            fetch(`https://raw.githubusercontent.com/srinivas-batthula/leetcode_solutions/main/${v}`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
                 }
-                return line;
-            }).join("\n");
+                return response.text();
+            })
+            .then(markdown => {
+                // Split the Markdown content into lines
+                let lines = markdown.split("\n");
+                let count = 0; // Counter for numbering problems
 
-            // Convert to HTML and update the page
-            document.getElementById('content').innerHTML = marked.parse(updatedMarkdown);
-        })
-        .catch(error => {
+                // Process each line
+                let updatedMarkdown = lines.map(line => {
+                    if (line.startsWith("### ")) { // Check if line is a title
+                        count++; // Increase problem number
+                        return `### ${count}. ` + line.replace(/^### \d*\.? /, ""); // Replace existing number
+                    }
+                    return line;
+                }).join("\n")
+
+                // Convert to HTML and update the page
+                document.getElementById('content').innerHTML = marked.parse(updatedMarkdown);
+            })
+            .catch(error => {
             document.getElementById('content').innerHTML = `<p style="color:red;">Error loading README: ${error.message}</p>`;
             console.error("Error loading README:", error);
-        });
-        });
+            })
+        })
     </script>
 
 </body>
