@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Display README.md</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.0.4/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
         body { font-family: Arial, sans-serif; padding: 20px; max-width: 800px; margin: auto; }
         #content { border: 1px solid #ddd; padding: 15px; border-radius: 5px; background: #f9f9f9; }
@@ -16,14 +16,23 @@
     <div id="content">Loading...</div>
 
     <script>
-    fetch('https://raw.githubusercontent.com/srinivas-batthula/leetcode_solutions/main/Arrays/Basic.md')
-    .then(response => response.text())
-    .then(markdown => {
-        document.getElementById('content').innerHTML = marked.parse(markdown);
-    })
-    .catch(error => console.error("Error loading README:", error));
-  </script>
-
+        document.addEventListener("DOMContentLoaded", function () {
+            fetch('https://raw.githubusercontent.com/srinivas-batthula/leetcode_solutions/main/Arrays/Basic')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+                return response.text();
+            })
+            .then(markdown => {
+                document.getElementById('content').innerHTML = marked.parse(markdown);
+            })
+            .catch(error => {
+                document.getElementById('content').innerHTML = `<p style="color:red;">Error loading README: ${error.message}</p>`;
+                console.error("Error loading README:", error);
+            });
+        });
+    </script>
 
 </body>
 </html>
