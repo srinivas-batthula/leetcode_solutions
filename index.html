@@ -65,60 +65,67 @@
 
         // Add Problem to GitHub
         document.getElementById("addProblemBtn").addEventListener("click", async function () {
-            const title = document.getElementById("title").value.trim();
-            const link = document.getElementById("link").value.trim();
-            const path = document.getElementById("path").value.trim();
+    const title = document.getElementById("title").value.trim();
+    const link = document.getElementById("link").value.trim();
+    const path = document.getElementById("path").value.trim();
 
-            if (!title || !link || !path) {
-                alert("Please enter all fields (title, link, path)");
-                return;
-            }
+    if (!title || !link || !path) {
+        alert("Please enter all fields (title, link, path)");
+        return;
+    }
 
-            const githubUsername = "srinivas-batthula"; // Your GitHub username
-            const repoName = "leetcode_solutions"; // Your repository name
-            const filePath = path;
-            const apiUrl = `https://api.github.com/repos/${githubUsername}/${repoName}/contents/${filePath}`;
-            const token = "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"; // Replace with your GitHub PAT
+    const githubUsername = "srinivas-batthula"; // Your GitHub username
+    const repoName = "leetcode_solutions"; // Your repository name
+    const filePath = path;
+    const apiUrl = `https://api.github.com/repos/${githubUsername}/${repoName}/contents/${filePath}`;
+    const token = "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"; // Replace with your actual GitHub token
 
-            try {
-                // Fetch existing file content
-                const response = await fetch(apiUrl, {
-                    headers: { Authorization: `token ${token}` }
-                });
-
-                if (!response.ok) throw new Error(`GitHub API Error: ${response.status}`);
-
-                const fileData = await response.json();
-                const existingContent = atob(fileData.content); // Decode base64 content
-
-                // Append new problem in Markdown format
-                const newContent = existingContent + `\n\n### [${title}](${link})\n<br>\n`;
-
-                // Encode to base64
-                const encodedContent = btoa(unescape(encodeURIComponent(newContent)));
-
-                // Push update to GitHub
-                const updateResponse = await fetch(apiUrl, {
-                    method: "PUT",
-                    headers: {
-                        Authorization: `token ${token}`,
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify({
-                        message: `Added new problem: ${title}`,
-                        content: encodedContent,
-                        sha: fileData.sha
-                    })
-                });
-
-                if (!updateResponse.ok) throw new Error(`GitHub Update Error: ${updateResponse.status}`);
-
-                alert("Problem added successfully!");
-            } catch (error) {
-                console.error("Error adding problem:", error);
-                alert("Failed to add problem. Check console for details.");
-            }
+    try {
+        // Fetch existing file content
+        let fileSha = "";
+        let existingContent = "";
+        
+        const response = await fetch(apiUrl, {
+            headers: { Authorization: `Bearer ${token}` }
         });
+
+        if (response.ok) {
+            const fileData = await response.json();
+            fileSha = fileData.sha;
+            existingContent = atob(fileData.content); // Decode base64 content
+        }
+
+        // Append new problem in Markdown format
+        const newContent = existingContent + `\n\n### [${title}](${link})\n<br>\n`;
+
+        // Encode content properly
+        function encodeBase64(str) {
+            return btoa(new TextEncoder().encode(str).reduce((data, byte) => data + String.fromCharCode(byte), ''));
+        }
+        const encodedContent = encodeBase64(newContent);
+
+        // Push update to GitHub
+        const updateResponse = await fetch(apiUrl, {
+            method: "PUT",
+            headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                message: `Added new problem: ${title}`,
+                content: encodedContent,
+                sha: fileSha // Use fetched SHA or empty for new files
+            })
+        });
+
+        if (!updateResponse.ok) throw new Error(`GitHub Update Error: ${updateResponse.status}`);
+
+        alert("Problem added successfully!");
+    } catch (error) {
+        console.error("Error adding problem:", error);
+        alert("Failed to add problem. Check console for details.");
+    }
+});
     </script>
 
 </body>
