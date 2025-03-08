@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Display README.md</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.0.4/marked.min.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; max-width: 800px; margin: auto; }
+        #content { border: 1px solid #ddd; padding: 15px; border-radius: 5px; background: #f9f9f9; }
+    </style>
+</head>
+<body>
+
+    <h2>README.md Preview</h2>
+    <div id="content">Loading...</div>
+
+    <script>
+    fetch('https://raw.githubusercontent.com/srinivas-batthula/leetcode_solutions/main/Arrays/Basic.md')
+    .then(response => response.text())
+    .then(markdown => {
+        document.getElementById('content').innerHTML = marked.parse(markdown);
+    })
+    .catch(error => console.error("Error loading README:", error));
+  </script>
+
+
+</body>
+</html>
